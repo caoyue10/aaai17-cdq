@@ -1,6 +1,6 @@
 # aaai17-cdq
 
-This is the implementation of AAAI-17 paper "Collective Deep Quantization for Efficient Cross-modal Retrieval". The descriptions of files in this directory are listed below:
+This is the Tensorflow (Version 0.11) implementation of AAAI-17 paper "Collective Deep Quantization for Efficient Cross-modal Retrieval". The descriptions of files in this directory are listed below:
 
 - `cdq.py`: contains the main implementation of the proposed approach `cdq`.
 - `train_script.py`: gives an example to show how to train `cdq` model. 
