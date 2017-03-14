@@ -1,0 +1,8 @@
+# Compiled python
+*.pyc
+
+# log files
+*.out
+
+# models
+*.npz
