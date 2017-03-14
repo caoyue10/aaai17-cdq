@@ -4,7 +4,7 @@
 # Details:                                                                             #
 #                                                                                      #
 #                                                                                      #
-# Model from https://gist.github.com/ksimonyan/211839e770f7b538e2d8#file-readme-md     #
+# Model from https://github.com/guerzh/tf_weights                                      #
 # Weights from Caffe converted using https://github.com/ethereon/caffe-tensorflow      #
 ########################################################################################
 
@@ -136,7 +136,6 @@ class cdq:
         self.n_database = config['n_database']
         self.n_query = config['n_query']
         self.cq_lambda = config['cq_lambda']
-        self.cross_modal_centers_lambda = config['c_lambda']
 
         self.max_iter = config['max_iter']
         self.max_epoch = config['training_epoch']

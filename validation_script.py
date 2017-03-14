@@ -17,7 +17,6 @@ gpu = sys.argv[5]
 config = {
     'device': '/gpu:' + gpu,
     'centers_device': '/gpu:' + gpu,
-    'gpu_usage': 11,#G
     'training_epoch': 30,
     'max_iter': 5000,
     'max_iter_update_b': update_b_n,
@@ -30,7 +29,6 @@ config = {
     'learning_rate_decay_factor': 0.1,   # Learning rate decay factor.
     'initial_learning_rate_img': 0.001,       # Initial learning rate img.
     'initial_learning_rate_txt': 0.0001,       # Initial learning rate txt.
-    'c_lambda': 1.0,
 
     # 2^8 * 4 = 32bit
     'n_subspace': subspace_n,
