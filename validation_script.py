@@ -22,6 +22,7 @@ config = {
     'max_iter_update_b': update_b_n,
     'max_iter_update_Cb': 1,
     'cq_lambda': 0.1,
+    'alpha': 1.0,
     'batch_size': 100,
     'code_batch_size': 100,
     'moving_average_decay': 0.9999,      # The decay to use for the moving average. 

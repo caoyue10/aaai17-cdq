@@ -57,6 +57,7 @@ class MAPs:
         self.subcenter_num = subcenter_num
         self.R = R
 
+    ### Use dot product as the distance metric
     def distance(self, a, b):
         return np.dot(a, b)
 
@@ -76,6 +77,7 @@ class MAPs:
         print self.all_rel.shape
         print self.all_rel
 
+    ### Use Symmetric Quantizer Distance (SQD) for evaluation
     def get_mAPs_SQD(self, database, query):
         self.all_rel = np.dot(np.dot(query.codes, self.C), np.dot(database.codes, self.C).T)
         ids = np.argsort(-self.all_rel, 1)
@@ -98,6 +100,7 @@ class MAPs:
         print "mAPs: ", np.mean(np.array(APx))
         return np.mean(np.array(APx))
 
+    ### Directly use deep feature for evaluation, which can be regarded as the upper bound of performance.
     def get_mAPs_by_feature(self, database, query):
         self.all_rel = np.dot(query.output, database.output.T)
         ids = np.argsort(-self.all_rel, 1)
@@ -122,6 +125,7 @@ class MAPs:
 
 class cdq:
     def __init__(self, config):
+        ### initialize the hyper-parameters
         self.device = config['device']
         self.centers_device = config['centers_device']
         self.txt_dim = config['txt_dim']
@@ -151,7 +155,9 @@ class cdq:
         self.initial_learning_rate_img = config['initial_learning_rate_img']# Initial learning rate for image layer.
         self.initial_learning_rate_txt = config['initial_learning_rate_txt']# Initial learning rate for text layer.
 
-        self.save_dir = config['save_dir'] + 'lr_' + str(self.initial_learning_rate_img) + '_' + str(self.initial_learning_rate_txt) + '_cq_lambda_'+ str(self.cq_lambda) + '_subspace_' + str(self.subspace_num) + '_updateB_' + str(self.max_iter_update_b)  + '_' + self.img_model + '_' + self.txt_model +'_epoch_' + str(self.max_epoch) + '_' + str(self.output_dim) + 'bit' + '.npz'
+        self.alpha = config['alpha']
+
+        self.save_dir = config['save_dir'] + 'lr_' + str(self.initial_learning_rate_img) + '_' + str(self.initial_learning_rate_txt) + '_cq_lambda_'+ str(self.cq_lambda) + '_subspace_' + str(self.subspace_num) + '_updateB_' + str(self.max_iter_update_b)  + '_' + self.img_model + '_' + self.txt_model +'_epoch_' + str(self.max_epoch) + '_' + str(self.output_dim) + '_alpha_' + str(self.alpha) + '.npz'
 
         self.config = config
 
@@ -160,10 +166,9 @@ class cdq:
         configProt.allow_soft_placement = True
         self.sess = tf.Session(config = configProt)
 
+        ### initialize Centers
         for d in [self.device, self.centers_device]:
             with tf.device(d):
-                #self.C = tf.Variable(tf.truncated_normal([self.subspace_num * self.subcenter_num, self.output_dim],
-                                                                 #dtype=tf.float32), name='centers')
                 self.C = tf.Variable(tf.random_uniform([self.subspace_num * self.subcenter_num, self.output_dim],
                                             minval = -1, maxval = 1, dtype = tf.float32, name = 'centers'))
 
@@ -203,9 +208,11 @@ class cdq:
         
         self.all_parameters = self.deep_parameters_img + self.deep_parameters_img_lastlayer + self.deep_parameters_txt + self.deep_parameters_txt_lastlayer + [self.C]
 
-        if self.img_model == 'vgg' and 'weights' in config.keys():
+        # train procedure
+        if 'weights' in config.keys():
             self.load_weights_img(config['weights'])
         
+        # validation procedure
         if 'model_weights' in config.keys():
             self.load_model(config['model_weights'])
 
@@ -213,11 +220,11 @@ class cdq:
         with tf.device(self.device):
             ### Loss Function
             ### O = L + \lambda (Q^x + Q^y)
-            ### L = sum_{ij} (log (1 + exp(<u_i,v_j>)) - s_ij <u_i, v_j>)
+            ### L = sum_{ij} (log (1 + exp(alpha * <u_i,v_j>)) - alpha * s_ij * <u_i, v_j>)
             ### Q^x = || u - C * b_x ||
             ### Q^y = || v - C * b_y ||
             ### InnerProduct Value \in [-15, 15]
-            InnerProduct = tf.clip_by_value(tf.matmul(self.img_last_layer, tf.transpose(self.txt_last_layer)), -1.5e1, 1.5e1)
+            InnerProduct = tf.clip_by_value(tf.mul(self.alpha, tf.matmul(self.img_last_layer, tf.transpose(self.txt_last_layer))), -1.5e1, 1.5e1)
             Sim = tf.clip_by_value(tf.matmul(self.img_label, tf.transpose(self.txt_label)), 0.0, 1.0)
             t_ones = tf.ones([tf.shape(self.img_last_layer)[0], tf.shape(self.txt_last_layer)[0]])
 
@@ -230,14 +237,10 @@ class cdq:
             self.q_lambda = tf.Variable(self.cq_lambda, name='lambda')
             self.cq_loss = tf.mul(self.q_lambda, tf.add(self.cq_loss_img, self.cq_loss_txt))
             self.total_loss = tf.add(self.cross_entropy_loss, self.cq_loss)
-    
-    def feed_forward(self, X, Y):
-        pass
+            
 
     def img_layers(self):
-        if self.img_model == 'vgg':
-            return self.img_vgg_layers()
-        elif self.img_model == 'alexnet':
+        if self.img_model == 'alexnet':
             if self.train_stage:
                 return self.img_alexnet_layers()
             else:
@@ -258,12 +261,9 @@ class cdq:
     
         # Image processing for training the network. Note the many random
         # distortions applied to the image.
- 
         reshaped_image = tf.cast(self.imgs, tf.float32)
 
-        if self.img_model == 'vgg':
-            IMAGE_SIZE = 224
-        elif self.img_model == 'alexnet':
+        if self.img_model == 'alexnet':
             IMAGE_SIZE = 227
 
         height = IMAGE_SIZE
@@ -472,9 +472,7 @@ class cdq:
         
         reshaped_image = tf.cast(self.imgs, tf.float32)
 
-        if self.img_model == 'vgg':
-            IMAGE_SIZE = 224
-        elif self.img_model == 'alexnet':
+        if self.img_model == 'alexnet':
             IMAGE_SIZE = 227
 
         height = IMAGE_SIZE
@@ -706,7 +704,6 @@ class cdq:
         return self.txt_fc2, self.txt_fc2o
 
     def load_weights_img(self, weight_file):
-        #with tf.device(self.config['device']):
         weights = np.load(weight_file)
         keys = sorted(weights.keys())
         for i, k in enumerate(keys):
@@ -843,8 +840,7 @@ class cdq:
         
         # Variables that affect learning rate.
         num_batches_per_epoch = self.n_train / self.batch_size
-        # decay_steps = int(num_batches_per_epoch * self.num_epochs_per_decay)
-        decay_steps = 500 * 8
+        decay_steps = int(num_batches_per_epoch * self.num_epochs_per_decay)
 
         # Decay the learning rate exponentially based on the number of steps.
         self.img_lr = tf.train.exponential_decay(self.initial_learning_rate_img, global_step, decay_steps,
@@ -859,7 +855,6 @@ class cdq:
 
         # Compute gradients of deep neural networks, 
         # without Centers and Binary Codes.
-
         apply_gradient_op_img = tf.train.MomentumOptimizer(learning_rate=self.img_lr, momentum=0.9).minimize(self.total_loss, var_list=self.deep_parameters_img, global_step=global_step)
         apply_gradient_op_img_last = tf.train.MomentumOptimizer(learning_rate=self.img_lr*10, momentum=0.9).minimize(self.total_loss, var_list=self.deep_parameters_img_lastlayer, global_step=global_step)
         apply_gradient_op_txt = tf.train.MomentumOptimizer(learning_rate=self.txt_lr, momentum=0.9).minimize(self.total_loss, var_list=self.deep_parameters_txt+self.deep_parameters_txt_lastlayer, global_step=global_step)
