@@ -20,20 +20,19 @@ The [AlexNet](https://github.com/guerzh/tf_weights) is used as the pre-trained m
 
 Citation
 ---------------
-
-@inproceedings{DBLP:conf/aaai/CaoL0L17,
-  author    = {Yue Cao and
-               Mingsheng Long and
-               Jianmin Wang and
-               Shichen Liu},
-  title     = {Collective Deep Quantization for Efficient Cross-Modal Retrieval},
-  booktitle = {Proceedings of the Thirty-First {AAAI} Conference on Artificial Intelligence,
-               February 4-9, 2017, San Francisco, California, {USA.}},
-  pages     = {3974--3980},
-  year      = {2017},
-  crossref  = {DBLP:conf/aaai/2017},
-  url       = {http://aaai.org/ocs/index.php/AAAI/AAAI17/paper/view/14499},
-  timestamp = {Mon, 06 Mar 2017 11:36:24 +0100},
-  biburl    = {http://dblp2.uni-trier.de/rec/bib/conf/aaai/CaoL0L17},
-  bibsource = {dblp computer science bibliography, http://dblp.org}
-}
+    @inproceedings{DBLP:conf/aaai/CaoL0L17,
+      author    = {Yue Cao and
+                   Mingsheng Long and
+                   Jianmin Wang and
+                   Shichen Liu},
+      title     = {Collective Deep Quantization for Efficient Cross-Modal Retrieval},
+      booktitle = {Proceedings of the Thirty-First {AAAI} Conference on Artificial Intelligence,
+                   February 4-9, 2017, San Francisco, California, {USA.}},
+      pages     = {3974--3980},
+      year      = {2017},
+      crossref  = {DBLP:conf/aaai/2017},
+      url       = {http://aaai.org/ocs/index.php/AAAI/AAAI17/paper/view/14499},
+      timestamp = {Mon, 06 Mar 2017 11:36:24 +0100},
+      biburl    = {http://dblp2.uni-trier.de/rec/bib/conf/aaai/CaoL0L17},
+      bibsource = {dblp computer science bibliography, http://dblp.org}
+    }
