@@ -208,10 +208,6 @@ class cdq:
         
         self.all_parameters = self.deep_parameters_img + self.deep_parameters_img_lastlayer + self.deep_parameters_txt + self.deep_parameters_txt_lastlayer + [self.C]
 
-        # train procedure
-        if 'weights' in config.keys():
-            self.load_weights_img(config['weights'])
-        
         # validation procedure
         if 'model_weights' in config.keys():
             self.load_model(config['model_weights'])
