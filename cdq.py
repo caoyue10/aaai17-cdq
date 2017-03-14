@@ -229,8 +229,6 @@ class cdq:
             t_ones = tf.ones([tf.shape(self.img_last_layer)[0], tf.shape(self.txt_last_layer)[0]])
 
             self.cross_entropy_loss = tf.reduce_mean(tf.sub(tf.log(tf.add(t_ones, tf.exp(InnerProduct))), tf.mul(Sim, InnerProduct)))
-            self.test1 = Sim
-            self.test2 = InnerProduct
             
             self.cq_loss_img = tf.reduce_mean(tf.reduce_sum(tf.square(tf.sub(self.img_last_layer, tf.matmul(self.b_img, self.C))), 1))
             self.cq_loss_txt = tf.reduce_mean(tf.reduce_sum(tf.square(tf.sub(self.txt_last_layer, tf.matmul(self.b_txt, self.C))), 1))
@@ -946,9 +944,7 @@ class cdq:
                                              examples_per_sec, sec_per_batch))
 
                         print self.sess.run([self.img_lr, self.txt_lr, self.global_step])
-                        test1, test2, bC_img, bC_txt = self.sess.run([self.test1, self.test2, tf.matmul(self.b_img, self.C), tf.matmul(self.b_txt, self.C)], feed_dict = {self.imgs: images, self.img_label: image_labels, self.b_img: image_codes, self.txts: texts, self.txt_label: text_labels, self.b_txt: text_codes})
-                        print test1
-                        print test2
+                        bC_img, bC_txt = self.sess.run([tf.matmul(self.b_img, self.C), tf.matmul(self.b_txt, self.C)], feed_dict = {self.imgs: images, self.img_label: image_labels, self.b_img: image_codes, self.txts: texts, self.txt_label: text_labels, self.b_txt: text_codes})
                         print "img original:"
                         print img_last_layer
                         print "img reconstr:"
