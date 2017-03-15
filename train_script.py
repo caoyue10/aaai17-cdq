@@ -28,7 +28,7 @@ config = {
     'batch_size': 64,
     'code_batch_size': 100,
     'moving_average_decay': 0.9999,      # The decay to use for the moving average. 
-    'num_epochs_per_decay': 5,          # Epochs after which learning rate decays.
+    'num_epochs_per_decay': 15,          # Epochs after which learning rate decays.
     'learning_rate_decay_factor': 0.5,   # Learning rate decay factor.
     'initial_learning_rate_img': lr_img,       # Initial learning rate img.
     'initial_learning_rate_txt': lr_txt,       # Initial learning rate txt.

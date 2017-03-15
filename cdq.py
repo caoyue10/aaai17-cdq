@@ -99,6 +99,29 @@ class MAPs:
                 print "step: ", i
         print "mAPs: ", np.mean(np.array(APx))
         return np.mean(np.array(APx))
+    
+    ### Use Symmetric Quantizer Distance (SQD) for evaluation
+    def get_mAPs_AQD(self, database, query):
+        self.all_rel = np.dot(query.output, np.dot(database.codes, self.C).T)
+        ids = np.argsort(-self.all_rel, 1)
+        APx = []
+        query_labels = query.get_labels()
+        database_labels = database.get_labels()
+        print "#calc mAPs# calculating mAPs"
+        for i in xrange(self.all_rel.shape[0]):
+            label = query_labels[i, :]
+            label[label == 0] = -1
+            idx = ids[i, :]
+            imatch = np.sum(database_labels[idx[0: self.R], :] == label, 1) > 0
+            rel = np.sum(imatch)
+            Lx = np.cumsum(imatch)
+            Px = Lx.astype(float) / np.arange(1, self.R + 1, 1)
+            if rel != 0:
+                APx.append(np.sum(Px * imatch) / rel)
+            if i % 100 == 0:
+                print "step: ", i
+        print "mAPs: ", np.mean(np.array(APx))
+        return np.mean(np.array(APx))
 
     ### Directly use deep feature for evaluation, which can be regarded as the upper bound of performance.
     def get_mAPs_by_feature(self, database, query):
@@ -1002,8 +1025,8 @@ class cdq:
             mAPs = MAPs(self.sess.run(self.C), self.subspace_num, self.subcenter_num, self.config["R"])
 
             return {
-                'i2t': mAPs.get_mAPs_SQD(database_txt, query_img),
-                't2i': mAPs.get_mAPs_SQD(database_img, query_txt),
+                'i2t_AQD': mAPs.get_mAPs_AQD(database_txt, query_img),
+                't2i_AQD': mAPs.get_mAPs_AQD(database_img, query_txt),
                 'i2t_nocq': mAPs.get_mAPs_by_feature(database_txt, query_img),
                 't2i_nocq': mAPs.get_mAPs_by_feature(database_img, query_txt),
                 }
